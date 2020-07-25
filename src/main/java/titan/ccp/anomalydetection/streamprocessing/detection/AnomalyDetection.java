@@ -8,17 +8,17 @@ import titan.ccp.models.records.AggregatedActivePowerRecord;
  */
 public interface AnomalyDetection {
 
-    /**
-     * Determines whether an {@link ActivePowerRecord} is an anomaly or not.
-     * @return
-     * true, if the record was classified as an anomaly
-     */
-    boolean activePowerRecordAnomalyDetection(final ActivePowerRecord record);
+  /**
+   * Determines whether an {@link ActivePowerRecord} is an anomaly or not.
+   * 
+   * @return true, if the record was classified as an anomaly
+   */
+  boolean activePowerRecordAnomalyDetection(final ActivePowerRecord record);
 
-    /**
-     * Determines whether {@link AggregatedActivePowerRecord} is an anomaly or not.
-     * @return
-     * true, if the record was classified as an anomaly
-     */
-    boolean aggregatedActivePowerRecordAnomalyDetection(final AggregatedActivePowerRecord record);
+  /**
+   * Determines whether {@link AggregatedActivePowerRecord} is an anomaly or not.
+   * 
+   * @return true, if the record was classified as an anomaly
+   */
+  boolean aggregatedActivePowerRecordAnomalyDetection(final AggregatedActivePowerRecord record);
 }

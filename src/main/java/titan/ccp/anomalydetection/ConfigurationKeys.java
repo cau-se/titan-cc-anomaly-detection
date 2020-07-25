@@ -5,50 +5,50 @@ package titan.ccp.anomalydetection;
  */
 public final class ConfigurationKeys {
 
-    public static final String CASSANDRA_HOST = "cassandra.host";
+  public static final String CASSANDRA_HOST = "cassandra.host";
 
-    public static final String CASSANDRA_PORT = "cassandra.port";
+  public static final String CASSANDRA_PORT = "cassandra.port";
 
-    public static final String CASSANDRA_KEYSPACE = "cassandra.keyspace";
+  public static final String CASSANDRA_KEYSPACE = "cassandra.keyspace";
 
-    public static final String CASSANDRA_INIT_TIMEOUT_MS = "cassandra.init.timeout.ms";
+  public static final String CASSANDRA_INIT_TIMEOUT_MS = "cassandra.init.timeout.ms";
 
-    public static final String CASSANDRA_TABLE_NAME_SUFFIX = "cassandra.table.name.suffix";
+  public static final String CASSANDRA_TABLE_NAME_SUFFIX = "cassandra.table.name.suffix";
 
-    public static final String WEBSERVER_ENABLE = "webserver.enable";
+  public static final String WEBSERVER_ENABLE = "webserver.enable";
 
-    public static final String WEBSERVER_PORT = "webserver.port";
+  public static final String WEBSERVER_PORT = "webserver.port";
 
-    public static final String WEBSERVER_CORS = "webserver.cors";
+  public static final String WEBSERVER_CORS = "webserver.cors";
 
-    public static final String WEBSERVER_GZIP = "webserver.gzip";
+  public static final String WEBSERVER_GZIP = "webserver.gzip";
 
-    public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
+  public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
 
-    public static final String KAFKA_OUTPUT_TOPIC = "kafka.output.topic";
+  public static final String KAFKA_OUTPUT_TOPIC = "kafka.output.topic";
 
-    public static final String KAFKA_INPUT_TOPIC = "kafka.input.topic";
+  public static final String KAFKA_INPUT_TOPIC = "kafka.input.topic";
 
-    public static final String NUM_THREADS = "num.threads";
+  public static final String NUM_THREADS = "num.threads";
 
-    public static final String COMMIT_INTERVAL_MS = "commit.interval.ms";
+  public static final String COMMIT_INTERVAL_MS = "commit.interval.ms";
 
-    public static final String CACHE_MAX_BYTES_BUFFERING = "cache.max.bytes.buffering";
+  public static final String CACHE_MAX_BYTES_BUFFERING = "cache.max.bytes.buffering";
 
-    public static final String STATS_HOST = "stats.host";
+  public static final String STATS_HOST = "stats.host";
 
-    public static final String CONFIG_HOST = "config.host";
+  public static final String CONFIG_HOST = "config.host";
 
-    public static final String WEBCLIENT_POLLINGRATE = "webclient.pollingrate";
+  public static final String WEBCLIENT_POLLINGRATE = "webclient.pollingrate";
 
-    public static final String TIME_ZONE = "time.zone";
+  public static final String TIME_ZONE = "time.zone";
 
-    public static final String NUM_STANDARD_DEVIATIONS = "num.standard.deviations";
+  public static final String NUM_STANDARD_DEVIATIONS = "num.standard.deviations";
 
-    public static final String ANOMALY_TOLERANCE = "anomaly.tolerance";
+  public static final String ANOMALY_TOLERANCE = "anomaly.tolerance";
 
-    public static final String ANOMALY_AGGREGATED_TOLERANCE = "anomaly.aggregated.tolerance";
+  public static final String ANOMALY_AGGREGATED_TOLERANCE = "anomaly.aggregated.tolerance";
 
-    private ConfigurationKeys() {}
+  private ConfigurationKeys() {}
 
 }
