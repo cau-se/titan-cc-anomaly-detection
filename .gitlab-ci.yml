@@ -29,8 +29,6 @@ build:
     paths:
       - build/libs/*.jar
       - build/distributions/*.tar
-      - record-counter/build/libs/*.jar
-      - record-counter/build/distributions/*.tar
     expire_in: 1 day
 
 test:
@@ -38,26 +36,46 @@ test:
   tags:
     - dockerex
   script: ./gradlew test
+  artifacts:
+    reports:
+      junit:
+        - "build/test-results/test/TEST-*.xml"
+    expire_in: 28 day
 
 checkstyle:
   stage: check
   tags:
     - dockerex
   script: ./gradlew checkstyle
-  
+  artifacts:
+    paths:
+      - build/reports/checkstyle/main.html
+    when: on_failure
+    expire_in: 28 days
+
 pmd:
   stage: check
   tags:
     - dockerex
   script: ./gradlew pmd
-  
+  artifacts:
+    paths:
+      - build/reports/pmd/*.html
+    when: on_failure
+    expire_in: 28 days
+
 spotbugs:
   stage: check
   tags:
     - dockerex
   script: ./gradlew spotbugs
+  artifacts:
+    paths:
+      - build/reports/spotbugs/*.html
+    when: on_failure
+    expire_in: 28 days
 
-deploy:
+.deploy:
   stage: deploy
   tags:
     - dockerex
@@ -70,33 +88,14 @@ deploy:
     DOCKER_TLS_CERTDIR: "/certs"
   script:
     - DOCKER_TAG_NAME=$(echo $CI_COMMIT_REF_SLUG- | sed 's/^master-$//')
-    - docker build --pull -t titan-ccp-history .
-    - docker tag titan-ccp-history industrialdevops/titan-ccp-history:${DOCKER_TAG_NAME}latest
-    - docker tag titan-ccp-history industrialdevops/titan-ccp-history:$DOCKER_TAG_NAME$(date +%Y%m%d%H%M%S)
-    - docker tag titan-ccp-history industrialdevops/titan-ccp-history:$DOCKER_TAG_NAME$CI_COMMIT_SHA
+    - docker build --pull -t titan-ccp-anomaly-detection .
+    - docker tag titan-ccp-anomaly-detection $DOCKERHUB_ORG/titan-ccp-anomaly-detection:${DOCKER_TAG_NAME}latest
+    - docker tag titan-ccp-anomaly-detection $DOCKERHUB_ORG/titan-ccp-anomaly-detection:$DOCKER_TAG_NAME$(date +%Y%m%d%H%M%S)
+    - docker tag titan-ccp-anomaly-detection $DOCKERHUB_ORG/titan-ccp-anomaly-detection:$DOCKER_TAG_NAME$CI_COMMIT_SHA
     - echo $DOCKERHUB_PW | docker login -u $DOCKERHUB_ID --password-stdin
-    - docker push industrialdevops/titan-ccp-history
+    - docker push $DOCKERHUB_ORG/titan-ccp-anomaly-detection
   only:
     variables:
-      - $DOCKERHUB_ID
-      - $DOCKERHUB_PW
-
-deploy-record-tester:
-  stage: deploy
-  tags:
-    - dockerex
-  image: docker:latest
-  services:
-    - docker:dind
-  script:
-    - DOCKER_TAG_NAME=$(echo $CI_COMMIT_REF_SLUG- | sed 's/^master-$//')
-    - docker build --pull -t titan-ccp-record-counter ./record-counter
-    - docker tag titan-ccp-record-counter industrialdevops/titan-ccp-record-counter:${DOCKER_TAG_NAME}latest
-    - docker tag titan-ccp-record-counter industrialdevops/titan-ccp-record-counter:$DOCKER_TAG_NAME$(date +%Y%m%d%H%M%S)
-    - docker tag titan-ccp-record-counter industrialdevops/titan-ccp-record-counter:$DOCKER_TAG_NAME$CI_COMMIT_SHA
-    - echo $DOCKERHUB_PW | docker login -u $DOCKERHUB_ID --password-stdin
-    - docker push industrialdevops/titan-ccp-record-counter
-  only:
-    variables:
+      - $DOCKERHUB_ORG
       - $DOCKERHUB_ID
       - $DOCKERHUB_PW
