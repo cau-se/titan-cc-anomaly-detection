@@ -1,7 +1,7 @@
 apply plugin: 'application'
 apply plugin: 'pmd'
 apply plugin: 'checkstyle'
-//apply plugin: 'com.github.spotbugs'
+apply plugin: 'com.github.spotbugs'
 apply plugin: 'eclipse'
 
 buildscript {
@@ -10,9 +10,9 @@ buildscript {
       url "https://plugins.gradle.org/m2/"
     }
   }
-//  dependencies {
-//      classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.3"
-//  }
+  dependencies {
+    classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.3"
+  }
 }
 
 sourceCompatibility = "1.11"
@@ -23,12 +23,15 @@ configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 
-allprojects { 
+allprojects {
 	repositories {
 	    jcenter()
 	    maven {
 	    	url "https://oss.sonatype.org/content/repositories/snapshots/"
 	    }
+	    maven {
+	      url 'https://packages.confluent.io/maven/'
+    	}
 	}
 }
 
@@ -37,7 +40,7 @@ dependencies {
     compile 'net.kieker-monitoring:kieker:1.14'
     compile 'org.apache.kafka:kafka-streams:2.3.0'
     compile 'com.sparkjava:spark-core:2.7.2'
-	compile 'com.google.code.gson:gson:2.8.2'
+	  compile 'com.google.code.gson:gson:2.8.2'
     compile 'com.google.guava:guava:20.0'
     compile 'net.jodah:failsafe:1.1.0'
     compile 'org.apache.commons:commons-configuration2:2.2'
@@ -49,6 +52,9 @@ dependencies {
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'
     testCompile 'com.github.stefanbirkner:system-rules:1.17.0'
+
+    // Use JUnit test framework
+    testCompile 'junit:junit:4.12'
 }
 
 mainClassName = "titan.ccp.anomalydetection.AnomalyDetectionService"
@@ -56,7 +62,7 @@ mainClassName = "titan.ccp.anomalydetection.AnomalyDetectionService"
 pmd {
   ruleSets = [] // Gradle requires to clean the rule sets first
   ruleSetFiles = files("config/pmd.xml")
-  ignoreFailures = true
+  ignoreFailures = false
   toolVersion = "6.7.0"
 }
 
@@ -64,32 +70,32 @@ checkstyle {
   configDir = file("config")
   configFile = file("config/checkstyle.xml")
   maxWarnings = 0
-  ignoreFailures = true
+  ignoreFailures = false
   toolVersion = "8.12"
 }
 
-//spotbugs {
-//  excludeFilter = file("config/spotbugs-exclude-filter.xml")
-//  reportLevel = "low"
-//  effort = "max"
-//  ignoreFailures = true
-//  toolVersion = '3.1.7'
-//}
+spotbugs {
+  excludeFilter = file("config/spotbugs-exclude-filter.xml")
+  reportLevel = "low"
+  effort = "max"
+  ignoreFailures = false
+  toolVersion = '3.1.7'
+}
 
 // Per default XML reports for SpotBugs are generated
 // Include this to generate HTML reports
-//tasks.withType(com.github.spotbugs.SpotBugsTask) {
-//  reports {
-////     Either HTML or XML reports can be activated
-//    html.enabled true
-//    xml.enabled false
-//  }
-//}
+tasks.withType(com.github.spotbugs.SpotBugsTask) {
+  reports {
+    // Either HTML or XML reports can be activated
+    html.enabled true
+    xml.enabled false
+  }
+}
 
 task checkstyle {
   group 'Quality Assurance'
   description 'Run Checkstyle'
-  
+
   dependsOn 'checkstyleMain'
   dependsOn 'checkstyleTest'
 }
@@ -102,13 +108,13 @@ task pmd {
   dependsOn 'pmdTest'
 }
 
-//task spotbugs {
-//    group 'Quality Assurance'
-//    description 'Run SpotBugs'
-//
-//    dependsOn 'spotbugsMain'
-//    dependsOn 'spotbugsTest'
-//}
+task spotbugs {
+  group 'Quality Assurance'
+  description 'Run SpotBugs'
+
+  dependsOn 'spotbugsMain'
+  dependsOn 'spotbugsTest'
+}
 
 eclipse {
     classpath {
