@@ -40,6 +40,8 @@ public class AnomalyDetectionService {
         .activePowerTopic(this.config.getString(ConfigurationKeys.KAFKA_TOPIC_ACTIVE_POWER))
         .aggrActivePowerTopic(
             this.config.getString(ConfigurationKeys.KAFKA_TOPIC_AGGR_ACTIVE_POWER))
+        .hourOfWeekStatsTopic(
+            this.config.getString(ConfigurationKeys.KAFKA_TOPIC_HOUROFWEEKS))
         .anomaliesTopic(this.config.getString(ConfigurationKeys.KAFKA_TOPIC_ANOMALIES))
         .schemaRegistry(this.config.getString(ConfigurationKeys.SCHEMA_REGISTRY_URL))
         .build();

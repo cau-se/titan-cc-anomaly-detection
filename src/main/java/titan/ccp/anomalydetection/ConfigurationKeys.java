@@ -27,6 +27,8 @@ public final class ConfigurationKeys {
 
   public static final String KAFKA_TOPIC_AGGR_ACTIVE_POWER = "kafka.topic.aggractivepower";
 
+  public static final String KAFKA_TOPIC_HOUROFWEEKS = "kafka.topic.hourofweekstats";
+
   public static final String KAFKA_TOPIC_ANOMALIES = "kafka.topic.anomalies";
 
   public static final String NUM_THREADS = "num.threads";
