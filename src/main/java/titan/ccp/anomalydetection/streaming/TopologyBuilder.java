@@ -6,6 +6,7 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.Produced;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import titan.ccp.common.avro.cassandra.AvroDataAdapter;
@@ -37,15 +38,19 @@ public class TopologyBuilder {
       final Serdes serdes,
       final Session cassandraSession,
       final String activePowerTopic,
-      final String aggregatedActivePowerTopic) {
+      final String aggregatedActivePowerTopic,
+      final String hourOfWeekStatsTopic,
+      final String anomaliesTopic) {
 
     this.serdes = serdes;
     this.cassandraSession = cassandraSession;
 
     final KStream<String, ActivePowerRecord> recordStream =
         this.buildInputStream(activePowerTopic, aggregatedActivePowerTopic);
-    final KStream<String, AnomalyPowerRecord> anomalyStream = this.buildAnomalyStream(recordStream);
+    final KStream<String, AnomalyPowerRecord> anomalyStream =
+        this.buildAnomalyStream(recordStream, hourOfWeekStatsTopic);
     this.storeAnomalyStream(anomalyStream);
+    this.publishAnomalyStream(anomalyStream, anomaliesTopic);
   }
 
   public Topology build() {
@@ -78,7 +83,10 @@ public class TopologyBuilder {
   }
 
   private KStream<String, AnomalyPowerRecord> buildAnomalyStream(
-      final KStream<String, ActivePowerRecord> recordStream) {
+      final KStream<String, ActivePowerRecord> recordStream, final String hourOfWeekStatsTopic) {
+
+    LOGGER.info("hourOfWeekStatsTopic: {}", hourOfWeekStatsTopic); // TODO remove
+
     return recordStream
         .mapValues(record -> new AnomalyPowerRecord(
             record.getIdentifier(),
@@ -100,6 +108,13 @@ public class TopologyBuilder {
     recordStream
         .peek((k, v) -> LOGGER.info("Write anaomly record to database: {}.", v))
         .foreach((k, v) -> cassandraWriter.write(v));
+  }
+
+  private void publishAnomalyStream(final KStream<String, AnomalyPowerRecord> recordStream,
+      final String anomaliesTopic) {
+    recordStream.to(anomaliesTopic, Produced.with(
+        this.serdes.string(),
+        this.serdes.avroValues()));
   }
 
 

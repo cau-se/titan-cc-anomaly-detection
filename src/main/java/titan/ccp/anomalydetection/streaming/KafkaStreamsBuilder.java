@@ -19,6 +19,7 @@ public class KafkaStreamsBuilder { // NOPMD Builder class
   private String bootstrapServers; // NOPMD
   private String activePowerTopic; // NOPMD
   private String aggrActivePowerTopic; // NOPMD
+  private String hourOfWeekStatsTopic; // NOPMD
   private String anomaliesTopic; // NOPMD
   private String schemaRegistryUrl; // NOPMD
   private Session cassandraSession; // NOPMD
@@ -43,6 +44,11 @@ public class KafkaStreamsBuilder { // NOPMD Builder class
 
   public KafkaStreamsBuilder aggrActivePowerTopic(final String aggrActivePowerTopic) {
     this.aggrActivePowerTopic = aggrActivePowerTopic;
+    return this;
+  }
+
+  public KafkaStreamsBuilder hourOfWeekStatsTopic(final String hourOfWeekStatsTopic) {
+    this.hourOfWeekStatsTopic = hourOfWeekStatsTopic;
     return this;
   }
 
@@ -106,15 +112,19 @@ public class KafkaStreamsBuilder { // NOPMD Builder class
         "Kafka topic for active power records has not been set.");
     Objects.requireNonNull(this.aggrActivePowerTopic,
         "Kafka topic for aggregated active power records has not been set.");
+    Objects.requireNonNull(this.hourOfWeekStatsTopic,
+        "Kafka topic for hour of week stats has not been set.");
     Objects.requireNonNull(this.anomaliesTopic,
-        "Kafka topic detected anomalies has not been set.");
+        "Kafka topic for detected anomalies has not been set.");
     Objects.requireNonNull(this.cassandraSession, "Cassandra session has not been set.");
     // TODO log parameters
     final TopologyBuilder topologyBuilder = new TopologyBuilder(
         new Serdes(this.schemaRegistryUrl),
         this.cassandraSession,
         this.activePowerTopic,
-        this.aggrActivePowerTopic);
+        this.aggrActivePowerTopic,
+        this.hourOfWeekStatsTopic,
+        this.anomaliesTopic);
     return topologyBuilder.build();
   }
 
