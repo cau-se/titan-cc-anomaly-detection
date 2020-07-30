@@ -22,7 +22,6 @@ public class TopologyBuilder {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TopologyBuilder.class);
 
-
   private static final String ANOMALIES_TABLE = "anomalies";
   private static final String IDENTIFIER_COLUMN = "identifier";
   private static final String TIMESTAMP_COLUMN = "timestamp";

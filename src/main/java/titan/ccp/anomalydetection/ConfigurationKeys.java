@@ -19,6 +19,8 @@ public final class ConfigurationKeys {
 
   public static final String WEBSERVER_CORS = "webserver.cors";
 
+  public static final String WEBSERVER_GZIP = "webserver.gzip";
+
   public static final String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap.servers";
 
   public static final String KAFKA_TOPIC_ACTIVE_POWER = "kafka.topic.activepower";

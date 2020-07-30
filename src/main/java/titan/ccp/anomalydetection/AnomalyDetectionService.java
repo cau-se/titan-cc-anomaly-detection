@@ -4,6 +4,8 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.kafka.streams.KafkaStreams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import titan.ccp.anomalydetection.api.CassandraRepository;
+import titan.ccp.anomalydetection.api.RestApiServer;
 import titan.ccp.anomalydetection.streaming.KafkaStreamsBuilder;
 import titan.ccp.common.cassandra.SessionBuilder;
 import titan.ccp.common.cassandra.SessionBuilder.ClusterSession;
@@ -42,6 +44,15 @@ public class AnomalyDetectionService {
         .schemaRegistry(this.config.getString(ConfigurationKeys.SCHEMA_REGISTRY_URL))
         .build();
     kafkaStreams.start();
+
+    if (this.config.getBoolean(ConfigurationKeys.WEBSERVER_ENABLE)) {
+      final RestApiServer restApiServer = new RestApiServer(
+          new CassandraRepository(clusterSession.getSession()),
+          this.config.getInt(ConfigurationKeys.WEBSERVER_PORT),
+          this.config.getBoolean(ConfigurationKeys.WEBSERVER_CORS),
+          this.config.getBoolean(ConfigurationKeys.WEBSERVER_GZIP));
+      restApiServer.start();
+    }
 
   }
 
