@@ -75,7 +75,7 @@ spotbugs:
     when: on_failure
     expire_in: 28 days
 
-.deploy:
+deploy:
   stage: deploy
   tags:
     - dockerex
