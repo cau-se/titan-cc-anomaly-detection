@@ -1,11 +1,18 @@
 package titan.ccp.anomalydetection.streaming;
 
 import com.datastax.driver.core.Session;
+import java.time.DayOfWeek;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.Consumed;
+import org.apache.kafka.streams.kstream.Grouped;
+import org.apache.kafka.streams.kstream.Joined;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Produced;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +22,7 @@ import titan.ccp.common.cassandra.ExplicitPrimaryKeySelectionStrategy;
 import titan.ccp.model.records.ActivePowerRecord;
 import titan.ccp.model.records.AggregatedActivePowerRecord;
 import titan.ccp.model.records.AnomalyPowerRecord;
+import titan.ccp.model.records.HourOfWeekActivePowerRecord;
 
 /**
  * Builds Kafka Stream Topology for the Stats microservice.
@@ -26,6 +34,8 @@ public class TopologyBuilder {
   private static final String ANOMALIES_TABLE = "anomalies";
   private static final String IDENTIFIER_COLUMN = "identifier";
   private static final String TIMESTAMP_COLUMN = "timestamp";
+
+  private final ZoneId zone = ZoneId.of("Europe/Paris"); // TODO as parameter
 
   private final Serdes serdes;
   private final Session cassandraSession;
@@ -47,6 +57,7 @@ public class TopologyBuilder {
 
     final KStream<String, ActivePowerRecord> recordStream =
         this.buildInputStream(activePowerTopic, aggregatedActivePowerTopic);
+
     final KStream<String, AnomalyPowerRecord> anomalyStream =
         this.buildAnomalyStream(recordStream, hourOfWeekStatsTopic);
     this.storeAnomalyStream(anomalyStream);
@@ -85,13 +96,52 @@ public class TopologyBuilder {
   private KStream<String, AnomalyPowerRecord> buildAnomalyStream(
       final KStream<String, ActivePowerRecord> recordStream, final String hourOfWeekStatsTopic) {
 
-    LOGGER.info("hourOfWeekStatsTopic: {}", hourOfWeekStatsTopic); // TODO remove
+    final KTable<HourOfWeekKey, HourOfWeekActivePowerRecord> statsTable = this.builder
+        .stream(
+            hourOfWeekStatsTopic,
+            Consumed.with(
+                this.serdes.string(),
+                this.serdes.<HourOfWeekActivePowerRecord>avroValues()))
+        .groupBy(
+            (k, record) -> new HourOfWeekKey(
+                DayOfWeek.of(record.getDayOfWeek()),
+                record.getHourOfDay(),
+                record.getIdentifier()),
+            Grouped.with(
+                this.serdes.hourOfWeekKey(),
+                this.serdes.<HourOfWeekActivePowerRecord>avroValues()))
+        .reduce((a, b) -> {
+          if (a.getPeriodEnd() < b.getPeriodEnd()) {
+            return b;
+          } else if (a.getPeriodEnd() > b.getPeriodEnd()) {
+            return a;
+          } else if (a.getCount() <= b.getCount()) {
+            return b;
+          } else {
+            return a;
+          }
+        });
 
     return recordStream
-        .mapValues(record -> new AnomalyPowerRecord(
-            record.getIdentifier(),
-            record.getTimestamp(),
-            record.getValueInW(), 1.0));
+        .selectKey((key, value) -> {
+          final Instant instant = Instant.ofEpochMilli(value.getTimestamp());
+          final LocalDateTime dateTime = LocalDateTime.ofInstant(instant, this.zone);
+          final DayOfWeek dayOfWeek = dateTime.getDayOfWeek();
+          final int hourOfDay = dateTime.getHour();
+          return new HourOfWeekKey(dayOfWeek, hourOfDay, value.getIdentifier());
+        })
+        .join(statsTable,
+            (measurement, stats) -> new MeasurementStatsPair(measurement, stats),
+            Joined.with(
+                this.serdes.hourOfWeekKey(),
+                this.serdes.avroValues(),
+                this.serdes.avroValues()))
+        .mapValues(j -> new AnomalyPowerRecord(
+            j.getMeasurement().getIdentifier(),
+            j.getMeasurement().getTimestamp(),
+            j.getMeasurement().getValueInW(),
+            this.calculateAnomalyScore(j)))
+        .selectKey((key, v) -> key.getSensorId());
   }
 
   private void storeAnomalyStream(final KStream<String, AnomalyPowerRecord> recordStream) {
@@ -106,7 +156,7 @@ public class TopologyBuilder {
         .build();
 
     recordStream
-        .peek((k, v) -> LOGGER.info("Write anaomly record to database: {}.", v))
+        .peek((k, v) -> LOGGER.info("Write anomaly record to database: {}.", v))
         .foreach((k, v) -> cassandraWriter.write(v));
   }
 
@@ -115,6 +165,15 @@ public class TopologyBuilder {
     recordStream.to(anomaliesTopic, Produced.with(
         this.serdes.string(),
         this.serdes.avroValues()));
+  }
+
+  private double calculateAnomalyScore(final MeasurementStatsPair measurementStatsPair) {
+    final double value = measurementStatsPair.getMeasurement().getValueInW();
+    final double mean = measurementStatsPair.getStats().getMean();
+    final double standardDeviation =
+        Math.sqrt(measurementStatsPair.getStats().getPopulationVariance());
+
+    return (value - mean) / standardDeviation; // zScore
   }
 
 
