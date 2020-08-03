@@ -13,7 +13,6 @@ import titan.ccp.common.configuration.ServiceConfigurations;
 
 /**
  * A microservice for detecting anomalies.
- *
  */
 public class AnomalyDetectionService {
 
@@ -21,10 +20,13 @@ public class AnomalyDetectionService {
 
   private final Configuration config = ServiceConfigurations.createWithDefaults();
 
+  private KafkaStreams kafkaStreams;
+  private RestApiServer restApiServer;
+
   /**
    * Start the service.
    */
-  public void run() {
+  public void start() {
     LOGGER.info("Starting Titan Control Center Anomaly Detection microservice.");
 
     final ClusterSession clusterSession = new SessionBuilder()
@@ -34,7 +36,7 @@ public class AnomalyDetectionService {
         .timeoutInMillis(this.config.getInt(ConfigurationKeys.CASSANDRA_INIT_TIMEOUT_MS))
         .build();
 
-    final KafkaStreams kafkaStreams = new KafkaStreamsBuilder()
+    this.kafkaStreams = new KafkaStreamsBuilder()
         .cassandraSession(clusterSession.getSession())
         .bootstrapServers(this.config.getString(ConfigurationKeys.KAFKA_BOOTSTRAP_SERVERS))
         .activePowerTopic(this.config.getString(ConfigurationKeys.KAFKA_TOPIC_ACTIVE_POWER))
@@ -45,15 +47,15 @@ public class AnomalyDetectionService {
         .anomaliesTopic(this.config.getString(ConfigurationKeys.KAFKA_TOPIC_ANOMALIES))
         .schemaRegistry(this.config.getString(ConfigurationKeys.SCHEMA_REGISTRY_URL))
         .build();
-    kafkaStreams.start();
+    this.kafkaStreams.start();
 
     if (this.config.getBoolean(ConfigurationKeys.WEBSERVER_ENABLE)) {
-      final RestApiServer restApiServer = new RestApiServer(
+      this.restApiServer = new RestApiServer(
           new CassandraRepository(clusterSession.getSession()),
           this.config.getInt(ConfigurationKeys.WEBSERVER_PORT),
           this.config.getBoolean(ConfigurationKeys.WEBSERVER_CORS),
           this.config.getBoolean(ConfigurationKeys.WEBSERVER_GZIP));
-      restApiServer.start();
+      this.restApiServer.start();
     }
 
   }
@@ -62,12 +64,13 @@ public class AnomalyDetectionService {
    * Stop the service.
    */
   public void stop() {
-    // Do nothing so far
     LOGGER.info("Stopping Titan Control Center Anomaly Detection microservice.");
+    this.kafkaStreams.close();
+    this.restApiServer.stop();
   }
 
   public static void main(final String[] args) {
-    new AnomalyDetectionService().run();
+    new AnomalyDetectionService().start();
   }
 
 }
