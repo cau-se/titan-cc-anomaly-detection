@@ -1,19 +1,19 @@
-apply plugin: 'application'
-apply plugin: 'pmd'
-apply plugin: 'checkstyle'
-apply plugin: 'com.github.spotbugs'
-apply plugin: 'eclipse'
-
 buildscript {
   repositories {
     maven {
       url "https://plugins.gradle.org/m2/"
     }
   }
-  dependencies {
-    classpath "gradle.plugin.com.github.spotbugs:spotbugs-gradle-plugin:1.6.3"
-  }
 }
+
+plugins {
+  id "com.github.spotbugs" version "1.7.1"
+}
+
+apply plugin: 'application'
+apply plugin: 'pmd'
+apply plugin: 'checkstyle'
+apply plugin: 'eclipse'
 
 sourceCompatibility = "1.11"
 targetCompatibility = "1.11"
@@ -40,9 +40,10 @@ dependencies {
     compile('org.industrial-devops:titan-ccp-common-kafka:0.1.0-SNAPSHOT') { changing = true }
     compile('org.industrial-devops:titan-ccp-common-cassandra:0.0.2-SNAPSHOT') { changing = true }
     compile 'org.apache.kafka:kafka-streams:2.5.0'
-    compile 'com.sparkjava:spark-core:2.7.2'   
+    compile 'com.sparkjava:spark-core:2.7.2'
     compile 'org.apache.commons:commons-configuration2:2.2'
     compile 'commons-beanutils:commons-beanutils:1.9.2' // for commons-configuration2
+     implementation 'com.google.code.gson:gson:2.8.6'
     compile 'org.slf4j:slf4j-simple:1.7.25'
 
     // Use JUnit test framework
