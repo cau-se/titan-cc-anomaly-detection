@@ -1,8 +1,8 @@
 FROM openjdk:11-slim
 
-ADD build/distributions/titanccp-anomaly-detection.tar /
+ADD build/distributions/titan-ccp-anomaly-detection.tar /
 
 EXPOSE 80
 
 CMD JAVA_OPTS="$JAVA_OPTS -Dorg.slf4j.simpleLogger.defaultLogLevel=$LOG_LEVEL" \
-    /titanccp-anomaly-detection/bin/titanccp-anomaly-detection
+    /titan-ccp-anomaly-detection/bin/titan-ccp-anomaly-detection
