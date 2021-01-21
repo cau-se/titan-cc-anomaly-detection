@@ -2,6 +2,7 @@ package titan.ccp.anomalydetection.api;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Service;
@@ -16,7 +17,7 @@ public class RestApiServer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RestApiServer.class);
 
-  private final Gson gson = new GsonBuilder().serializeSpecialFloatingPointValues().create();
+  private final Gson gson = new GsonBuilder().create();
 
   private final AnomalyRepository repository;
 
@@ -49,7 +50,10 @@ public class RestApiServer {
           this.parseLongOrDefault(request.queryParams(FROM_QUERY_PARAM), Long.MIN_VALUE);
       final long to = this.parseLongOrDefault(request.queryParams(TO_QUERY_PARAM), Long.MAX_VALUE);
 
-      return this.repository.getAnomalies(identifier, from, to);
+      return this.repository.getAnomalies(identifier, from, to)
+          .stream()
+          .filter(a -> Double.isFinite(a.getAnomalyScore()))
+          .collect(Collectors.toList());
     }, this.gson::toJson);
 
     if (this.enableCors) {
