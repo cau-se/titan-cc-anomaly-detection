@@ -37,6 +37,8 @@ public class AnomalyDetectionService {
         .build();
 
     this.kafkaStreams = new KafkaStreamsBuilder()
+        .applicationName(this.config.getString(ConfigurationKeys.APPLICATION_NAME))
+        .applicationVersion(this.config.getString(ConfigurationKeys.APPLICATION_VERSION))
         .cassandraSession(clusterSession.getSession())
         .bootstrapServers(this.config.getString(ConfigurationKeys.KAFKA_BOOTSTRAP_SERVERS))
         .activePowerTopic(this.config.getString(ConfigurationKeys.KAFKA_TOPIC_ACTIVE_POWER))
