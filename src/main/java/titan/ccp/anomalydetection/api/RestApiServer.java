@@ -16,7 +16,7 @@ public class RestApiServer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RestApiServer.class);
 
-  private final Gson gson = new GsonBuilder().create();
+  private final Gson gson = new GsonBuilder().serializeSpecialFloatingPointValues().create();
 
   private final AnomalyRepository repository;
 
