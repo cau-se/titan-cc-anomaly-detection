@@ -1,9 +1,9 @@
 # Titan Control Center - Anomaly Detection
 
-The [Titan Control Center](https://ieeexplore.ieee.org/abstract/document/8822045)
-is a scalable monitoring infrastructure for [Industrial DevOps](https://industrial-devops.org/).
-It allows to monitor, analyze and visualize the electrical power consumption of
-devices and machines in industrial production environments.
+The [Titan Control Center](https://doi.org/10.1016/j.simpa.2020.100050)
+is a scalable and extensible analytics platform for [Industrial DevOps](https://industrial-devops.org/en).
+It analyzes and visualizes data streams from Internet of Things (IIoT) sensors
+(e.g. electrical power consumption) in industrial production.
 
 This repository contains the **Anomaly Detection** microservice of the Titan Control Center.
 
@@ -17,3 +17,23 @@ start scripts for Linux/macOS and Windows.
 This repository also contains a Dockerfile. Run
 `docker build -t titan-ccp-anomaly-detection .` to create a container from it (after
 building it with Gradle).
+
+## Reference
+
+Please cite the Titan Control Center as follows:
+
+> S. Henning, W. Hasselbring, *The Titan Control Center for Industrial DevOps analytics research*, Software Impacts 7 (2021), DOI: [10.1016/j.simpa.2020.100050](https://doi.org/10.1016/j.simpa.2020.100050).
+
+BibTeX:
+
+```bibtex
+@article{Henning2021,
+    title = {The Titan Control Center for Industrial DevOps analytics research},
+    journal = {Software Impacts},
+    volume = {7},
+    pages = {100050},
+    year = {2021},
+    doi = {10.1016/j.simpa.2020.100050},
+    author = {Sören Henning and Wilhelm Hasselbring},
+}
+```
